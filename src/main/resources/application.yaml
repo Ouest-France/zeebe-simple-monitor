@@ -1,22 +1,40 @@
+kafka:
+  zeebe:
+    timer: zeebe-timer
+    error: zeebe-error
+    incident: zeebe-incident
+    job: zeebe-job
+    message: zeebe-message
+    message-subscription: zeebe-message-subscription
+    message-start-event-subscription: zeebe-message-subscription-start-event
+    process: zeebe-process
+    process-event: zeebe-process-event
+    process-instance: zeebe-process-instance
+    process-instance-result: zeebe-process-instance-result
+    variable: zeebe-variable
+
 zeebe:
   client:
-    broker.gatewayAddress: 127.0.0.1:26500
+    broker.gatewayAddress: localhost:26500
     security.plaintext: true
 
     worker:
       hazelcast:
-        connection: localhost:5701
+        connection: qual-account-app-hazelcast.account-app-hazelcast.svc.cluster.local:5701
         connectionTimeout: PT30S
 
 spring:
   datasource:
-    url: jdbc:h2:mem:zeebe-monitor;DB_CLOSE_DELAY=-1
-    username: sa
-    password:
-    driverClassName: org.h2.Driver
+    url: jdbc:postgresql://localhost:5432/zeebe-simple-monitor
+    username: postgres
+    password: password
+    driverClassName: org.postgresql.Driver
 
   jpa:
-    database-platform: org.hibernate.dialect.H2Dialect
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: update
 
@@ -30,6 +48,18 @@ spring:
     web:
       pageable:
         default-page-size: 10
+
+  kafka:
+    listener.concurrency: 3
+    bootstrap-servers: localhost:9092
+    consumer:
+      auto-offset-reset: earliest
+      group-id: zeebe-simple-monitor
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+#      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: io.zeebe.exporters.kafka.serde.RecordDeserializer
+      enable-auto-commit: true
+
 
 server:
   port: 8082

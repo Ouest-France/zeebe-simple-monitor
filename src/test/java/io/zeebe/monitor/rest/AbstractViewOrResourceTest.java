@@ -11,7 +11,6 @@ import io.zeebe.monitor.repository.ProcessInstanceRepository;
 import io.zeebe.monitor.repository.ProcessRepository;
 import io.zeebe.monitor.repository.TimerRepository;
 import io.zeebe.monitor.repository.VariableRepository;
-import io.zeebe.monitor.zeebe.ZeebeHazelcastService;
 import io.zeebe.monitor.zeebe.status.ZeebeStatusUpdateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -43,7 +42,6 @@ public abstract class AbstractViewOrResourceTest {
 
   @MockBean protected ZeebeStatusUpdateService zeebeStatusUpdateService;
   @MockBean protected HazelcastConfigRepository hazelcastConfigRepository;
-  @MockBean protected ZeebeHazelcastService zeebeHazelcastService;
   @MockBean protected ProcessRepository processRepository;
   @MockBean protected ProcessInstanceRepository processInstanceRepository;
   @MockBean protected ElementInstanceRepository elementInstanceRepository;

@@ -9,6 +9,7 @@ import io.zeebe.monitor.rest.dto.ProcessInstanceDto;
 import io.zeebe.monitor.rest.dto.VariableEntry;
 import io.zeebe.monitor.rest.dto.VariableUpdateEntry;
 import java.time.Instant;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -66,7 +67,7 @@ public class InstancesVariableListController extends AbstractInstanceViewControl
           variableDto.setElementId(elementIdsForKeys.get(scopeKey));
 
           variableDto.setName(scopeKeyName.name);
-
+            variables.sort((v1, v2) -> Long.compare(v1.getTimestamp(),v2.getTimestamp()));
           final VariableEntity lastUpdate = variables.get(variables.size() - 1);
           variableDto.setValue(lastUpdate.getValue());
           variableDto.setTimestamp(Instant.ofEpochMilli(lastUpdate.getTimestamp()).toString());

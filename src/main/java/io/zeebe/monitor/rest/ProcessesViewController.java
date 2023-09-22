@@ -284,7 +284,7 @@ public class ProcessesViewController extends AbstractViewController {
                       eventDefinition -> {
                         if (eventDefinition instanceof ErrorEventDefinition) {
                           final var errorEventDefinition = (ErrorEventDefinition) eventDefinition;
-                          final var errorCode = errorEventDefinition.getError().getErrorCode();
+                          final var errorCode = errorEventDefinition.getError()!=null?errorEventDefinition.getError().getErrorCode():"";
 
                           info.setInfo("errorCode: " + errorCode);
                           infos.add(info);

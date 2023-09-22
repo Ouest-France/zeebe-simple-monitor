@@ -1,41 +1,48 @@
 package io.zeebe.monitor.zeebe.importers;
 
+import io.camunda.zeebe.protocol.record.Record;
 import io.camunda.zeebe.protocol.record.intent.JobIntent;
-import io.zeebe.exporter.proto.Schema;
+import io.camunda.zeebe.protocol.record.value.JobRecordValue;
 import io.zeebe.monitor.entity.JobEntity;
 import io.zeebe.monitor.repository.JobRepository;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
 @Component
 public class JobImporter {
 
-  @Autowired private JobRepository jobRepository;
+    @Autowired
+    private JobRepository jobRepository;
 
-  public void importJob(final Schema.JobRecord record) {
+    @KafkaListener(topics = "${kafka.zeebe.job}")
+    public void handle(final ConsumerRecord<String, Record<JobRecordValue>> record) {
 
-    final JobIntent intent = JobIntent.valueOf(record.getMetadata().getIntent());
-    final long key = record.getMetadata().getKey();
-    final long timestamp = record.getMetadata().getTimestamp();
+        Record<JobRecordValue> jobRecordValueRecord = record.value();
 
-    final JobEntity entity =
-        jobRepository
-            .findById(key)
-            .orElseGet(
-                () -> {
-                  final JobEntity newEntity = new JobEntity();
-                  newEntity.setKey(key);
-                  newEntity.setProcessInstanceKey(record.getProcessInstanceKey());
-                  newEntity.setElementInstanceKey(record.getElementInstanceKey());
-                  newEntity.setJobType(record.getType());
-                  return newEntity;
-                });
+        final JobIntent intent = JobIntent.valueOf(jobRecordValueRecord.getIntent().name());
+        final long key = jobRecordValueRecord.getKey();
+        final long timestamp = jobRecordValueRecord.getTimestamp();
 
-    entity.setState(intent.name().toLowerCase());
-    entity.setTimestamp(timestamp);
-    entity.setWorker(record.getWorker());
-    entity.setRetries(record.getRetries());
-    jobRepository.save(entity);
-  }
+        final JobEntity entity =
+                jobRepository
+                        .findById(key)
+                        .orElseGet(
+                                () -> {
+                                    final JobEntity newEntity = new JobEntity();
+                                    newEntity.setKey(key);
+                                    newEntity.setProcessInstanceKey(jobRecordValueRecord.getValue().getProcessInstanceKey());
+                                    newEntity.setElementInstanceKey(jobRecordValueRecord.getValue().getElementInstanceKey());
+                                    newEntity.setJobType(jobRecordValueRecord.getValue().getType());
+                                    return newEntity;
+                                });
+
+        entity.setState(intent.name().toLowerCase());
+        entity.setTimestamp(timestamp);
+        entity.setWorker(jobRecordValueRecord.getValue().getWorker());
+        entity.setRetries(jobRecordValueRecord.getValue().getRetries());
+        jobRepository.save(entity);
+    }
 
 }
